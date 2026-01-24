@@ -1,9 +1,19 @@
-set(Common_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/include CACHE PATH "Common_INCLUDE_DIRS")
+add_library(common INTERFACE)
 
-execute_process(COMMAND ls ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_VARIABLE TEST_MODULE_COMMON_ST)
-string(REPLACE "\n" ";" TEST_MODULE_COMMON_ST "${TEST_MODULE_COMMON_ST}")
-foreach(m ${TEST_MODULE_COMMON_ST})
-    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${m})
-        add_subdirectory(${m})
+file(GLOB COMMON_CHILDREN RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/*")
+foreach(child ${COMMON_CHILDREN})
+    if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${child}" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${child}/CMakeLists.txt")
+        add_subdirectory("${child}")
     endif()
 endforeach()
+
+if(TARGET math)
+    target_link_libraries(common INTERFACE math)
+endif()
+if(TARGET kalman)
+    target_link_libraries(common INTERFACE kalman)
+endif()
+
+set(Common_INCLUDE_DIRS
+    "${CMAKE_CURRENT_LIST_DIR}/math/include;${CMAKE_CURRENT_LIST_DIR}/kalman/include"
+    CACHE STRING "Common include directories")

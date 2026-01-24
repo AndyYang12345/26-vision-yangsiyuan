@@ -1,0 +1,126 @@
+{
+	"archive" : {},
+	"artifacts" : 
+	[
+		{
+			"path" : "modules/libM2.a"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"target_link_libraries",
+			"target_include_directories"
+		],
+		"files" : 
+		[
+			"modules/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 19,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 23,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 22,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 3,
+					"path" : "/home/harekasa/26-vision-yangsiyuan/task2/CMake_I/modules/M2/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/harekasa/26-vision-yangsiyuan/task2/CMake_I/modules/A1/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/harekasa/26-vision-yangsiyuan/task2/CMake_I/modules/A2/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/harekasa/26-vision-yangsiyuan/task2/CMake_I/common/kalman/include"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/local/include/opencv4"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "A1::@9b7b1f9db13f92153135"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "A2::@9b7b1f9db13f92153135"
+		}
+	],
+	"id" : "M2::@9b7b1f9db13f92153135",
+	"name" : "M2",
+	"nameOnDisk" : "libM2.a",
+	"paths" : 
+	{
+		"build" : "modules",
+		"source" : "modules"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "modules/M2/src/M2.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "STATIC_LIBRARY"
+}
