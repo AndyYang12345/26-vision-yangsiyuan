@@ -1,5 +1,18 @@
 # 更新日志
 
+## [0.0.7] - 2026-01-24
+
+### Feature 新增
+
++ Task2中CMake_I项目构建部分的README
+
+### Documentation 文档
+
+* Task2的README.md
+
+
+
+
 ## [0.0.6] - 2026-01-24
 
 ### Feature 新增
