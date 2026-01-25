@@ -1,8 +1,8 @@
-## [0.0.7] - 2026-01-24
+## [0.0.8] - 2026-01-24
 
 ### Feature 新增
 
-+ Task2中CMake_I项目构建部分的README
++ 新增.gitignore，排除编译产物
 
 ### Changed 变更
 
@@ -18,7 +18,7 @@
 
 ### Documentation 文档
 
-* Task2的README.md
+* 
 
 ### Other 其他
 

@@ -1,0 +1,31 @@
+# Build directories
+build/
+cmake-build-*/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# C/C++ compilation outputs
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dll
+*.dylib
+*.exe
+*.out
+
+# Debug/coverage artifacts
+*.dSYM/
+*.pdb
+*.gcno
+*.gcda
+*.gcov
+*.profraw
+*.profdata
