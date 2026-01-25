@@ -1,0 +1,18 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Linux",
+      "compilerPath": "/usr/bin/c++",
+      "intelliSenseMode": "linux-gcc-x64",
+      "cppStandard": "c++17",
+      "cStandard": "c17",
+      "compileCommands": "${workspaceFolder}/task1/build/compile_commands.json",
+      "includePath": [
+        "${workspaceFolder}/task1/include",
+        "${workspaceFolder}/task1/include/**",
+        "/usr/local/include/opencv4"
+      ]
+    }
+  ]
+}

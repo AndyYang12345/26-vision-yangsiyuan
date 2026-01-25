@@ -1,3 +1,25 @@
 {
-    "cmake.sourceDirectory": "/home/harekasa/26-vision-yangsiyuan/task2/CMake_I"
+  "cmake.sourceDirectory": "${workspaceFolder}/task1",
+  "cmake.buildDirectory": "${workspaceFolder}/task1/build",
+  "cmake.configureOnOpen": true,
+  "cmake.buildTarget": "task1",
+  "cmake.launchTarget": "task1",
+  "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+  "cmake.configureSettings": {
+    "CMAKE_BUILD_TYPE": "Debug",
+    "TASK1_BUILD_APP": "ON"
+  },
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/task1/build/compile_commands.json",
+  "C_Cpp.default.compilerPath": "/usr/bin/c++",
+  "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+  "C_Cpp.default.cppStandard": "c++17",
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/task1/include",
+    "${workspaceFolder}/task1/include/**",
+    "/usr/local/include/opencv4"
+  ],
+  "C_Cpp.default.browse.path": [
+    "${workspaceFolder}/task1/include",
+    "/usr/local/include/opencv4"
+  ]
 }
