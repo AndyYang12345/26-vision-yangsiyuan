@@ -55,6 +55,16 @@ public:
      * @return 目标颜色二值图像
      */
     cv::Mat process(const cv::Mat& frame, bool is_red_target = true);
+
+    struct ColorProcessResult {
+        cv::Mat enhanced;
+        cv::Mat red_binary;
+        cv::Mat blue_binary;
+        cv::Mat target_binary;
+        cv::Mat debug_image;
+    };
+
+    ColorProcessResult processDetailed(const cv::Mat& frame, bool is_red_target = true);
     
     /**
      * @brief 分别获取红色和蓝色的二值图像

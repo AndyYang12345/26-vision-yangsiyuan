@@ -4,7 +4,18 @@
 #include "LightBar.hpp"
 
 enum ArmorSize { SMALL_ARMOR, LARGE_ARMOR };
-enum ArmorNumber { UNKNOWN, NUMBER_1, NUMBER_2, /* ... */ };
+enum ArmorNumber {
+    UNKNOWN,
+    NUMBER_1,
+    NUMBER_2,
+    NUMBER_3,
+    NUMBER_4,
+    NUMBER_5,
+    NUMBER_6,
+    NUMBER_7,
+    NUMBER_8,
+    NUMBER_9
+};
 
 struct Armor {
     LightBar left_bar;             // 左灯条
@@ -14,6 +25,8 @@ struct Armor {
     ArmorNumber number;            // 装甲板数字
     float confidence;              // 置信度
     cv::Rect roi;                  // 感兴趣区域
+    cv::Scalar color;              // 装甲板颜色 (BGR)
+    std::vector<cv::Point3f> model_points; // 3D角点坐标
     
     // 获取装甲板中心点
     cv::Point2f getCenter() const;

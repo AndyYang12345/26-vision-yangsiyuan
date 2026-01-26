@@ -29,25 +29,25 @@ ColorProcessor::ColorProcessor(const ColorProcessorParams& params)
 }
 
 cv::Mat ColorProcessor::process(const cv::Mat& frame, bool is_red_target) {
+    ColorProcessResult result = processDetailed(frame, is_red_target);
+    return result.target_binary;
+}
+
+ColorProcessor::ColorProcessResult ColorProcessor::processDetailed(const cv::Mat& frame,
+                                                                   bool is_red_target) {
+    ColorProcessResult result;
     if (frame.empty()) {
         std::cerr << "Error: Empty frame in ColorProcessor!" << std::endl;
-        return cv::Mat();
+        return result;
     }
-    
-    // 步骤1: 图像增强
-    cv::Mat enhanced = enhanceImage(frame);
-    
-    // 步骤2: 分离红蓝颜色
-    cv::Mat red_binary, blue_binary;
-    separateColors(enhanced, red_binary, blue_binary);
-    
-    // 步骤3: 根据目标选择颜色
-    cv::Mat target_binary = is_red_target ? red_binary : blue_binary;
-    
-    // 步骤4: 创建调试图像
-    createDebugImage(frame, enhanced, red_binary, blue_binary, target_binary);
-    
-    return target_binary;
+
+    result.enhanced = enhanceImage(frame);
+    separateColors(result.enhanced, result.red_binary, result.blue_binary);
+    result.target_binary = is_red_target ? result.red_binary : result.blue_binary;
+
+    createDebugImage(frame, result.enhanced, result.red_binary, result.blue_binary, result.target_binary);
+    result.debug_image = debug_image_;
+    return result;
 }
 
 void ColorProcessor::separateColors(const cv::Mat& frame, cv::Mat& red_binary, cv::Mat& blue_binary) {

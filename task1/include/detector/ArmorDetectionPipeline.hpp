@@ -1,62 +1,69 @@
-// ArmorDetectionPipeline.hpp - 集成所有模块
+// ArmorDetectionPipeline.hpp - 简化版流水线
 #pragma once
+
 #include <memory>
 #include <string>
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include "../preprocessor/ImagePreprocessor.hpp"
-#include "../solver/PnPSolver.hpp"
+#include "../preprocessor/ColorProcessor.hpp"
 #include "../types/Armor.hpp"
 #include "../types/Params.hpp"
 #include "ArmorClassifier.hpp"
 #include "ArmorDetector.hpp"
 #include "LightBarDetector.hpp"
 
-struct DetectionResult {
+struct PreprocessResult {
+    cv::Mat original;
+    cv::Mat binary_raw;
+    cv::Mat binary;
+};
+
+struct LightBarDetectionResult {
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<LightBar> lightbars;
+};
+
+struct ArmorDetectionResult {
     std::vector<Armor> armors;
-    cv::Mat debug_image;
-    bool success;
-    double processing_time;
+};
+
+struct DetectionResult {
+    bool success = false;
+    double processing_time = 0.0;
+    PreprocessResult preprocess;
+    LightBarDetectionResult lightbars;
+    ArmorDetectionResult armors;
+    cv::Mat contours_vis;
+    cv::Mat lightbars_vis;
+    cv::Mat armors_vis;
+    cv::Mat number_roi;
 };
 
 class ArmorDetectionPipeline {
 public:
-    ArmorDetectionPipeline(const std::string& config_path);
-    
-    // 处理单帧图像
-    DetectionResult process(const cv::Mat& frame);
-    
-    // 更新参数
+    explicit ArmorDetectionPipeline(const Params& params = Params(),
+                                    const std::string& classifier_model_path = "");
+
+    DetectionResult process(const cv::Mat& frame, bool enemy_is_red);
     void updateParams(const Params& params);
-    
-    // 设置目标颜色
-    void setTargetColor(bool is_red);
-    
-    // 获取处理时间统计
-    struct TimingInfo {
-        double preprocess_time;
-        double detection_time;
-        double classification_time;
-        double pnp_time;
-        double total_time;
-    };
-    TimingInfo getTimingInfo() const { return timing_info_; }
-    
+    void updateClassifier(const std::string& model_path);
+
 private:
-    // 模块组件
-    std::unique_ptr<ImagePreprocessor> preprocessor_;
-    std::shared_ptr<LightBarDetector> lightbar_detector_;
-    std::unique_ptr<ArmorDetector> armor_detector_;
-    std::unique_ptr<ArmorClassifier> classifier_;
-    std::unique_ptr<PnPSolver> pnp_solver_;
-    
-    // 参数
     Params params_;
-    
-    // 时间统计
-    TimingInfo timing_info_;
-    
-    // 私有方法
-    void resetTiming();
-    void updateTiming(const std::string& stage, double time);
+    LightBarDetector lightbar_detector_;
+    ArmorDetector armor_detector_;
+    std::unique_ptr<ArmorClassifier> classifier_;
+
+    void ensureDefaultParams();
+    cv::Mat binarizeHSV(const cv::Mat& frame, bool enemy_is_red) const;
+    cv::Mat binarizeBRDiff(const cv::Mat& frame, bool enemy_is_red) const;
+    cv::Mat applyMorphology(const cv::Mat& binary) const;
+    cv::Mat drawContours(const cv::Mat& base,
+                         const std::vector<std::vector<cv::Point>>& contours) const;
+    cv::Mat drawLightBars(const cv::Mat& base,
+                          const std::vector<LightBar>& lightbars) const;
+    cv::Mat drawArmors(const cv::Mat& base,
+                       const std::vector<Armor>& armors) const;
+    cv::Rect clampRect(const cv::Rect& rect, const cv::Size& size) const;
+    std::string armorNumberToString(ArmorNumber number) const;
 };
