@@ -35,20 +35,35 @@ std::vector<cv::Point3f> buildModelPoints(ArmorSize size) {
 ArmorDetector::ArmorDetector(const ArmorParams& params)
     : params_(params) {
     if (!hasValidParams(params_)) {
+        // 基础几何参数
         params_.min_aspect_ratio = 1.6f;
         params_.max_aspect_ratio = 5.0f;
-        params_.min_lightbar_distance = 0.5f;
-        params_.max_lightbar_distance = 6.0f;
+        params_.min_lightbar_distance = 0.5f;    // 相对距离
+        params_.max_lightbar_distance = 6.0f;    // 相对距离
         params_.max_angle_diff = 15.0f;
         params_.max_height_diff_ratio = 0.6f;
         params_.max_length_ratio = 1.5f;
         params_.min_lightbar_area = 30.0f;
+        
+        // ========== 第一代抗幽灵参数 ==========
+        params_.max_cross_angle = 40.0f;          // 交叉角限制
+        params_.min_symmetry_score = 0.9f;        // 对称性检查（保持你的0.9）
+        params_.min_parallel_score = 0.9f;        // 平行度检查（保持你的0.9）
+        params_.max_center_offset_ratio = 0.4f;   // 中心偏移
+        
+        // ========== 新增：第二代抗幽灵参数（梯形特征检测） ==========
+        // 关键参数：高度一致性检查，专门针对幽灵装甲板的梯形特征
+        params_.min_height_consistency = 0.9f;    // 默认0.7，范围0.5-0.9
+        
+        // 辅助参数：对角线比例检查，验证矩形特征
+        params_.max_diagonal_ratio = 0.9f;        // 默认0.7，范围0.5-0.9
     }
 }
 
 void ArmorDetector::updateParams(const ArmorParams& params) {
     params_ = params;
     if (!hasValidParams(params_)) {
+        // 基础几何参数（与构造函数保持一致）
         params_.min_aspect_ratio = 1.6f;
         params_.max_aspect_ratio = 5.0f;
         params_.min_lightbar_distance = 0.5f;
@@ -57,6 +72,16 @@ void ArmorDetector::updateParams(const ArmorParams& params) {
         params_.max_height_diff_ratio = 0.6f;
         params_.max_length_ratio = 1.5f;
         params_.min_lightbar_area = 30.0f;
+        
+        // ========== 第一代抗幽灵参数 ==========
+        params_.max_cross_angle = 40.0f;
+        params_.min_symmetry_score = 0.9f;    // 注意：这里要改成0.9，与构造函数一致
+        params_.min_parallel_score = 0.9f;    // 注意：这里要改成0.9，与构造函数一致
+        params_.max_center_offset_ratio = 0.4f;
+        
+        // ========== 新增：第二代抗幽灵参数 ==========
+        params_.min_height_consistency = 0.7f;
+        params_.max_diagonal_ratio = 0.7f;
     }
 }
 

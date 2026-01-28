@@ -2,116 +2,144 @@
 #include "types/Params.hpp"
 #include <cmath>
 
+// LightBar结构体的成员函数实现
 bool LightBar::canPairWith(const LightBar& other, const Params& params) const {
-    const auto& armor_params = params.armor;  // 使用统一的参数结构
+    const auto& armor = params.armor;
     
-    // ========== 1. 基础面积过滤（防止噪声干扰） ==========
-    if (armor_params.min_lightbar_area > 0.0f) {
-        const float area1 = length * (length * 0.3f);  // 近似面积 = 长 × 宽(假设宽是长的30%)
-        const float area2 = other.length * (other.length * 0.3f);
-        if (area1 < armor_params.min_lightbar_area || 
-            area2 < armor_params.min_lightbar_area) {
-            return false;  // 灯条面积太小，可能是噪声
+    // 1. 基础面积过滤
+    if (armor.min_lightbar_area > 0.0f) {
+        if (getArea() < armor.min_lightbar_area || other.getArea() < armor.min_lightbar_area) {
+            return false;
         }
     }
     
-    // ========== 2. 角度一致性检查 ==========
-    if (armor_params.max_angle_diff > 0.0f) {
-        const float angle_diff = std::abs(angle - other.angle);
+    // 2. 角度一致性检查
+    if (armor.max_angle_diff > 0.0f) {
+        float angle_diff = std::abs(angle - other.angle);
+        angle_diff = std::min(angle_diff, 180.0f - angle_diff);
         
-        // 处理角度周期性问题（180°=0°）
-        float normalized_diff = std::fmod(angle_diff, 180.0f);
-        if (normalized_diff > 90.0f) {
-            normalized_diff = 180.0f - normalized_diff;
-        }
-        
-        if (normalized_diff > armor_params.max_angle_diff) {
-            return false;  // 角度差超过阈值
+        if (angle_diff > armor.max_angle_diff) {
+            return false;
         }
     }
     
-    // ========== 3. 长度比例检查 ==========
-    if (armor_params.max_length_ratio > 0.0f) {
+    // 3. 长度比例检查
+    if (armor.max_length_ratio > 0.0f) {
         const float length_ratio = std::max(length, other.length) / 
-                                   std::min(length, other.length + 0.001f);  // 防止除零
-        if (length_ratio > armor_params.max_length_ratio) {
-            return false;  // 长度差异过大
+                                   std::max(1.0f, std::min(length, other.length));
+        if (length_ratio > armor.max_length_ratio) {
+            return false;
         }
     }
     
-    // ========== 4. 距离约束（核心） ==========
+    // 4. 距离约束
     const float center_dist = cv::norm(center - other.center);
     const float mean_length = (length + other.length) * 0.5f;
     
-    // 4.1 最小相对距离约束
-    if (armor_params.min_lightbar_distance > 0.0f) {
-        if (center_dist / std::max(1.0f, mean_length) < armor_params.min_lightbar_distance) {
-            return false;  // 距离太近，可能是同一灯条的误分割
+    if (armor.min_lightbar_distance > 0.0f && mean_length > 1.0f) {
+        if (center_dist / mean_length < armor.min_lightbar_distance) {
+            return false;
         }
     }
     
-    // 4.2 最大绝对距离约束（新增）
-    if (armor_params.max_lightbar_distance > 0.0f) {
-        if (center_dist > armor_params.max_lightbar_distance) {
-            return false;  // 距离太远，不可能是同一装甲板
+    if (armor.max_lightbar_distance > 0.0f && mean_length > 1.0f) {
+        if (center_dist / mean_length > armor.max_lightbar_distance) {
+            return false;
         }
     }
     
-    // ========== 5. 高度对齐检查 ==========
-    if (armor_params.max_height_diff_ratio > 0.0f) {
+    // 5. 高度对齐检查
+    if (armor.max_height_diff_ratio > 0.0f && mean_length > 1.0f) {
         const float y_diff = std::abs(center.y - other.center.y);
-        if (mean_length > 0.1f) {  // 避免极小灯条导致的除零
-            const float height_diff_ratio = y_diff / mean_length;
-            if (height_diff_ratio > armor_params.max_height_diff_ratio) {
-                return false;  // Y方向未对齐
-            }
+        if (y_diff / mean_length > armor.max_height_diff_ratio) {
+            return false;
         }
     }
     
-    // ========== 6. 宽高比预测与检查（重要！） ==========
-    if (armor_params.min_aspect_ratio > 0.0f || armor_params.max_aspect_ratio > 0.0f) {
-        // 计算预测的装甲板区域
+    // 6. 宽高比检查
+    if (mean_length > 1.0f) {
         const float armor_width = center_dist;
         const float armor_height = mean_length;
+        const float aspect_ratio = armor_width / armor_height;
         
-        if (armor_height > 0.1f) {  // 避免除零
-            const float aspect_ratio = armor_width / armor_height;
+        if ((armor.min_aspect_ratio > 0.0f && aspect_ratio < armor.min_aspect_ratio) ||
+            (armor.max_aspect_ratio > 0.0f && aspect_ratio > armor.max_aspect_ratio)) {
+            return false;
+        }
+    }
+    
+    // 7. 关键：梯形特征检测（高度一致性检查）
+    if (armor.min_height_consistency > 0.0f) {
+        const cv::Point2f top1 = getTopPoint();
+        const cv::Point2f top2 = other.getTopPoint();
+        const cv::Point2f bottom1 = getBottomPoint();
+        const cv::Point2f bottom2 = other.getBottomPoint();
+        
+        const float top_y_diff = std::abs(top1.y - top2.y);
+        const float bottom_y_diff = std::abs(bottom1.y - bottom2.y);
+        
+        if (std::max(top_y_diff, bottom_y_diff) > 3.0f) {
+            const float height_consistency = std::min(top_y_diff, bottom_y_diff) / 
+                                           std::max(top_y_diff, bottom_y_diff);
             
-            // 小装甲板（英雄/哨兵）和大装甲板（步兵）有不同的宽高比
-            const bool within_range = 
-                (armor_params.min_aspect_ratio <= 0.0f || aspect_ratio >= armor_params.min_aspect_ratio) &&
-                (armor_params.max_aspect_ratio <= 0.0f || aspect_ratio <= armor_params.max_aspect_ratio);
-            
-            if (!within_range) {
-                return false;  // 宽高比不符合装甲板特征
+            if (height_consistency < armor.min_height_consistency) {
+                return false; // 梯形特征，幽灵装甲板
             }
         }
     }
     
-    // ========== 7. 方向平行度检查（使用向量点积） ==========
-    // 即使角度差合格，也检查方向是否真的平行
-    const float rad1 = angle * CV_PI / 180.0f;
-    const float rad2 = other.angle * CV_PI / 180.0f;
-    
-    cv::Point2f dir1(std::cos(rad1), std::sin(rad1));
-    cv::Point2f dir2(std::cos(rad2), std::sin(rad2));
-    
-    const float dot_product = std::abs(dir1.dot(dir2));  // 绝对值，方向相反也算平行
-    const float parallel_threshold = 0.9f;  // cos(25°) ≈ 0.9
-    
-    if (dot_product < parallel_threshold) {
-        return false;  // 不够平行
+    // 8. 对角线比例检查
+    if (armor.max_diagonal_ratio > 0.0f) {
+        const float diag1 = cv::norm(getTopPoint() - other.getBottomPoint());
+        const float diag2 = cv::norm(other.getTopPoint() - getBottomPoint());
+        
+        if (std::max(diag1, diag2) > 10.0f) {
+            const float diagonal_ratio = std::min(diag1, diag2) / std::max(diag1, diag2);
+            if (diagonal_ratio < armor.max_diagonal_ratio) {
+                return false;
+            }
+        }
     }
     
-    // ========== 8. X方向顺序检查（防止左右颠倒配对） ==========
-    // 确保按正确的左右顺序配对
-    const bool correct_order = 
-        (center.x < other.center.x && angle > 0) ||  // 左灯条向右倾斜
-        (center.x > other.center.x && angle < 0);    // 右灯条向左倾斜
-    
-    if (!correct_order && std::abs(angle) > 10.0f) {  // 角度较大时才检查
-        return false;  // 灯条倾斜方向与位置不匹配
+    // 9. 面积比例检查
+    const float area1 = getArea();
+    const float area2 = other.getArea();
+    if (std::max(area1, area2) > 10.0f) {
+        const float area_ratio = std::min(area1, area2) / std::max(area1, area2);
+        if (area_ratio < 0.5f) {
+            return false;
+        }
     }
     
-    return true;  // 通过所有检查
+    // 10. 交叉角检查（可选）
+    if (armor.max_cross_angle > 0.0f) {
+        const cv::Point2f line_vec = other.center - center;
+        const float line_angle = std::atan2(line_vec.y, line_vec.x) * 180.0f / CV_PI;
+        
+        float cross_angle1 = std::fmod(std::abs(line_angle - angle), 180.0f);
+        float cross_angle2 = std::fmod(std::abs(line_angle - other.angle), 180.0f);
+        cross_angle1 = std::min(cross_angle1, 180.0f - cross_angle1);
+        cross_angle2 = std::min(cross_angle2, 180.0f - cross_angle2);
+        
+        if (std::abs(cross_angle1 - 90.0f) > armor.max_cross_angle ||
+            std::abs(cross_angle2 - 90.0f) > armor.max_cross_angle) {
+            return false;
+        }
+    }
+    
+    // 11. 平行度检查
+    if (armor.min_parallel_score > 0.0f) {
+        const float rad1 = angle * CV_PI / 180.0f;
+        const float rad2 = other.angle * CV_PI / 180.0f;
+        
+        const cv::Point2f dir1(std::cos(rad1), std::sin(rad1));
+        const cv::Point2f dir2(std::cos(rad2), std::sin(rad2));
+        
+        const float parallel_score = std::abs(dir1.dot(dir2));
+        if (parallel_score < armor.min_parallel_score) {
+            return false;
+        }
+    }
+    
+    return true;
 }

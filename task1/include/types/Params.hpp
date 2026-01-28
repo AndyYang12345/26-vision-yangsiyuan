@@ -17,15 +17,25 @@ struct LightBarParams {
 };
 
 struct ArmorParams {
-    float min_aspect_ratio = 0.0f;        // 最小宽高比
-    float max_aspect_ratio = 0.0f;        // 最大宽高比
-    float min_lightbar_distance = 0.0f;   // 灯条最小距离
-    float max_lightbar_distance = 0.0f;   // 灯条最大距离
-    float max_angle_diff = 0.0f;          // 最大角度差
-    float max_height_diff_ratio = 0.0f;   // 最大高度差比例
-    float max_length_ratio = 0.0f;        // 最大长度比
-    float min_lightbar_area = 0.0f;       // 灯条最小面积
-    // ... 其他参数
+    // 基础几何参数
+    float min_aspect_ratio = 0.0f;
+    float max_aspect_ratio = 0.0f;
+    float min_lightbar_distance = 0.0f;
+    float max_lightbar_distance = 0.0f;
+    float max_angle_diff = 0.0f;
+    float max_height_diff_ratio = 0.0f;
+    float max_length_ratio = 0.0f;
+    float min_lightbar_area = 0.0f;
+    
+    // 第一代抗幽灵参数（已存在）
+    float max_cross_angle = 0.0f;
+    float min_symmetry_score = 0.0f;
+    float min_parallel_score = 0.0f;
+    float max_center_offset_ratio = 0.0f;
+    
+    // 新增：第二代抗幽灵参数（梯形特征检测）
+    float min_height_consistency = 0.0f;  // 高度一致性（梯形检测）
+    float max_diagonal_ratio = 0.0f;      // 最大对角线比例
 };
 
 struct Params {
