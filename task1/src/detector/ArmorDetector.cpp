@@ -40,7 +40,7 @@ ArmorDetector::ArmorDetector(const ArmorParams& params)
         params_.max_aspect_ratio = 5.0f;
         params_.min_lightbar_distance = 0.5f;    // 相对距离
         params_.max_lightbar_distance = 6.0f;    // 相对距离
-        params_.max_angle_diff = 15.0f;
+        params_.max_angle_diff = 5.0f;
         params_.max_height_diff_ratio = 0.6f;
         params_.max_length_ratio = 1.5f;
         params_.min_lightbar_area = 30.0f;
@@ -68,7 +68,7 @@ void ArmorDetector::updateParams(const ArmorParams& params) {
         params_.max_aspect_ratio = 5.0f;
         params_.min_lightbar_distance = 0.5f;
         params_.max_lightbar_distance = 6.0f;
-        params_.max_angle_diff = 15.0f;
+        params_.max_angle_diff = 5.0f;
         params_.max_height_diff_ratio = 0.6f;
         params_.max_length_ratio = 1.5f;
         params_.min_lightbar_area = 30.0f;
@@ -115,7 +115,11 @@ std::vector<Armor> ArmorDetector::match(const std::vector<LightBar>& lightbars) 
 }
 
 bool ArmorDetector::isValidPair(const LightBar& left, const LightBar& right) const {
-    const float angle_diff = std::abs(left.angle - right.angle);
+    float angle_diff = std::abs(left.angle - right.angle);
+    angle_diff = std::fmod(angle_diff, 180.0f);
+    if (angle_diff > 90.0f) {
+        angle_diff = 180.0f - angle_diff;
+    }
     const float mean_length = 0.5f * (left.length + right.length);
     const float center_dist = cv::norm(left.center - right.center);
     const float left_area = left.length * left.width;
@@ -132,6 +136,17 @@ bool ArmorDetector::isValidPair(const LightBar& left, const LightBar& right) con
 
     if (angle_diff > params_.max_angle_diff) {
         return false;
+    }
+
+    if (params_.min_parallel_score > 0.0f) {
+        const float rad1 = left.angle * CV_PI / 180.0f;
+        const float rad2 = right.angle * CV_PI / 180.0f;
+        const cv::Point2f dir1(std::cos(rad1), std::sin(rad1));
+        const cv::Point2f dir2(std::cos(rad2), std::sin(rad2));
+        const float parallel_score = std::abs(dir1.dot(dir2));
+        if (parallel_score < params_.min_parallel_score) {
+            return false;
+        }
     }
 
     if (height_ratio > params_.max_height_diff_ratio) {

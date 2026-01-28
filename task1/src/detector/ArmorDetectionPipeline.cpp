@@ -80,7 +80,7 @@ void ArmorDetectionPipeline::ensureDefaultParams() {
         params_.armor.max_lightbar_distance = 6.0f;
     }
     if (params_.armor.max_angle_diff <= 0.0f) {
-        params_.armor.max_angle_diff = 15.0f;
+        params_.armor.max_angle_diff = 5.0f;
     }
     if (params_.armor.max_height_diff_ratio <= 0.0f) {
         params_.armor.max_height_diff_ratio = 0.6f;

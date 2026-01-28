@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
         DetectionResult result = pipeline.process(frame, enemy_is_red);
         
         cv::Mat display = result.armors_vis.empty() ? frame : result.armors_vis.clone();
+        cv::imshow("LightBars", result.lightbars_vis);
         cv::imshow("Armors", display);
         
         // 计算并显示FPS
