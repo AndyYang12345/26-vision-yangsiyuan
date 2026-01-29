@@ -25,9 +25,9 @@ std::vector<cv::Point3f> buildModelPoints(ArmorSize size) {
     const float half_h = h * 0.5f;
     return {
         {-half_w,  half_h, 0.0f},  // 左上
-        { half_w,  half_h, 0.0f},  // 右上
+        {-half_w, -half_h, 0.0f},  // 左下
         { half_w, -half_h, 0.0f},  // 右下
-        {-half_w, -half_h, 0.0f}   // 左下
+        { half_w,  half_h, 0.0f}   // 右上
     };
 }
 }  // namespace

@@ -1,6 +1,7 @@
 #include "detector/ArmorDetectionPipeline.hpp"
-#include <chrono>
 #include <algorithm>
+#include <chrono>
+#include <cstdio>
 
 ArmorDetectionPipeline::ArmorDetectionPipeline(const Params& params,
                                                const std::string& classifier_model_path)
@@ -9,10 +10,21 @@ ArmorDetectionPipeline::ArmorDetectionPipeline(const Params& params,
                                               0.0, 1600.0, 240.0,
                                               0.0, 0.0, 1.0))
     , dist_coeffs_(cv::Mat::zeros(1, 5, CV_64F))
+    , rvec_cw_(cv::Mat::zeros(3, 1, CV_64F))
+    , tvec_cw_(cv::Mat::zeros(3, 1, CV_64F))
+    , rotation_cw_(cv::Mat::eye(3, 3, CV_64F))
+    , rotation_wc_(cv::Mat::eye(3, 3, CV_64F))
+    , tvec_wc_((cv::Mat_<double>(3, 1) << 50.0, 0.0, 0.0))
     , pnp_solver_(camera_matrix_, dist_coeffs_, 130.0f, 54.0f, 230.0f, 54.0f)
     , lightbar_detector_(params.lightbar)
     , armor_detector_(params.armor) {
     ensureDefaultParams();
+    rotation_cw_ = (cv::Mat_<double>(3, 3) << 0.0, 1.0, 0.0,
+                                             0.0, 0.0, -1.0,
+                                             -1.0, 0.0, 0.0);
+    rotation_wc_ = rotation_cw_.t();
+    tvec_cw_ = -rotation_cw_ * tvec_wc_;
+    cv::Rodrigues(rotation_cw_, rvec_cw_);
     if (!classifier_model_path.empty()) {
         classifier_ = std::make_unique<ArmorClassifier>(classifier_model_path);
     } else if (!params_.classifier_model_path.empty()) {
@@ -275,6 +287,16 @@ cv::Mat ArmorDetectionPipeline::drawArmors(const cv::Mat& base,
             cv::Mat tvec;
             if (pnp_solver_.solve(armor, rvec, tvec)) {
                 drawAxes(vis, rvec, tvec);
+                cv::Mat tvec_world = rotation_wc_ * tvec + tvec_wc_;
+                const cv::Point2f center = armor.getCenter();
+                char text[128];
+                std::snprintf(text, sizeof(text), "W:(%.1f,%.1f,%.1f)",
+                              tvec_world.at<double>(0),
+                              tvec_world.at<double>(1),
+                              tvec_world.at<double>(2));
+                cv::putText(vis, text, center + cv::Point2f(6.0f, -6.0f),
+                            cv::FONT_HERSHEY_SIMPLEX, 0.5,
+                            cv::Scalar(0, 200, 255), 1);
             }
         } else if (armor.roi.area() > 0) {
             cv::rectangle(vis, armor.roi, cv::Scalar(0, 255, 0), 2);
@@ -301,6 +323,7 @@ cv::Mat ArmorDetectionPipeline::drawArmors(const cv::Mat& base,
             y += 18;
         }
     }
+    drawWorldZAxis(vis);
     return vis;
 }
 
@@ -325,6 +348,30 @@ void ArmorDetectionPipeline::drawAxes(cv::Mat& vis,
     cv::line(vis, origin, projected[1], cv::Scalar(0, 0, 255), 2);  // X - Red
     cv::line(vis, origin, projected[2], cv::Scalar(0, 255, 0), 2);  // Y - Green
     cv::line(vis, origin, projected[3], cv::Scalar(255, 0, 0), 2);  // Z - Blue
+
+    std::vector<cv::Point3f> world_z_points = {
+        {0.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 100.0f}
+    };
+    std::vector<cv::Point2f> world_projected;
+    cv::projectPoints(world_z_points, rvec, tvec, camera_matrix_, dist_coeffs_, world_projected);
+    if (world_projected.size() == 2) {
+        cv::line(vis, world_projected[0], world_projected[1],
+                 cv::Scalar(255, 128, 0), 2);
+    }
+}
+
+void ArmorDetectionPipeline::drawWorldZAxis(cv::Mat& vis) const {
+    std::vector<cv::Point3f> world_z_points = {
+        {0.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 50.0f}
+    };
+    std::vector<cv::Point2f> projected;
+    cv::projectPoints(world_z_points, rvec_cw_, tvec_cw_,
+                      camera_matrix_, dist_coeffs_, projected);
+    if (projected.size() == 2) {
+        cv::line(vis, projected[0], projected[1], cv::Scalar(0, 128, 255), 2);
+    }
 }
 
 cv::Rect ArmorDetectionPipeline::clampRect(const cv::Rect& rect, const cv::Size& size) const {

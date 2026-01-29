@@ -53,6 +53,11 @@ private:
     Params params_;
     cv::Mat camera_matrix_;
     cv::Mat dist_coeffs_;
+    cv::Mat rvec_cw_;
+    cv::Mat tvec_cw_;
+    cv::Mat rotation_cw_;
+    cv::Mat rotation_wc_;
+    cv::Mat tvec_wc_;
     PnPSolver pnp_solver_;
     LightBarDetector lightbar_detector_;
     ArmorDetector armor_detector_;
@@ -71,6 +76,7 @@ private:
     void drawAxes(cv::Mat& vis,
                   const cv::Mat& rvec,
                   const cv::Mat& tvec) const;
+    void drawWorldZAxis(cv::Mat& vis) const;
     cv::Rect clampRect(const cv::Rect& rect, const cv::Size& size) const;
     std::string armorNumberToString(ArmorNumber number) const;
 };
