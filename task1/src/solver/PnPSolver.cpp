@@ -46,7 +46,7 @@ bool PnPSolver::solve(const Armor& armor,
         rvec,
         tvec,
         use_extrinsic_guess,
-        cv::SOLVEPNP_EPNP
+        cv::SOLVEPNP_IPPE
     );
 
     return success;
