@@ -8,6 +8,7 @@
 #include "../preprocessor/ColorProcessor.hpp"
 #include "../types/Armor.hpp"
 #include "../types/Params.hpp"
+#include "../solver/PnPSolver.hpp"
 #include "ArmorClassifier.hpp"
 #include "ArmorDetector.hpp"
 #include "LightBarDetector.hpp"
@@ -50,6 +51,9 @@ public:
 
 private:
     Params params_;
+    cv::Mat camera_matrix_;
+    cv::Mat dist_coeffs_;
+    PnPSolver pnp_solver_;
     LightBarDetector lightbar_detector_;
     ArmorDetector armor_detector_;
     std::unique_ptr<ArmorClassifier> classifier_;
@@ -64,6 +68,9 @@ private:
                           const std::vector<LightBar>& lightbars) const;
     cv::Mat drawArmors(const cv::Mat& base,
                        const std::vector<Armor>& armors) const;
+    void drawAxes(cv::Mat& vis,
+                  const cv::Mat& rvec,
+                  const cv::Mat& tvec) const;
     cv::Rect clampRect(const cv::Rect& rect, const cv::Size& size) const;
     std::string armorNumberToString(ArmorNumber number) const;
 };

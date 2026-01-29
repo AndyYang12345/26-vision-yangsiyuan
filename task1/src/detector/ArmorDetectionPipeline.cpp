@@ -5,6 +5,11 @@
 ArmorDetectionPipeline::ArmorDetectionPipeline(const Params& params,
                                                const std::string& classifier_model_path)
     : params_(params)
+    , camera_matrix_((cv::Mat_<double>(3, 3) << 1600.0, 0.0, 360.0,
+                                              0.0, 1600.0, 240.0,
+                                              0.0, 0.0, 1.0))
+    , dist_coeffs_(cv::Mat::zeros(1, 5, CV_64F))
+    , pnp_solver_(camera_matrix_, dist_coeffs_, 130.0f, 54.0f, 230.0f, 54.0f)
     , lightbar_detector_(params.lightbar)
     , armor_detector_(params.armor) {
     ensureDefaultParams();
@@ -265,6 +270,12 @@ cv::Mat ArmorDetectionPipeline::drawArmors(const cv::Mat& base,
             }
             cv::line(vis, armor.corners[0], armor.corners[2], cv::Scalar(0, 255, 0), 1);
             cv::line(vis, armor.corners[1], armor.corners[3], cv::Scalar(0, 255, 0), 1);
+
+            cv::Mat rvec;
+            cv::Mat tvec;
+            if (pnp_solver_.solve(armor, rvec, tvec)) {
+                drawAxes(vis, rvec, tvec);
+            }
         } else if (armor.roi.area() > 0) {
             cv::rectangle(vis, armor.roi, cv::Scalar(0, 255, 0), 2);
             cv::Point2f tl(armor.roi.x, armor.roi.y);
@@ -291,6 +302,29 @@ cv::Mat ArmorDetectionPipeline::drawArmors(const cv::Mat& base,
         }
     }
     return vis;
+}
+
+void ArmorDetectionPipeline::drawAxes(cv::Mat& vis,
+                                      const cv::Mat& rvec,
+                                      const cv::Mat& tvec) const {
+    const float axis_length = 60.0f;
+    std::vector<cv::Point3f> axis_points = {
+        {0.0f, 0.0f, 0.0f},
+        {axis_length, 0.0f, 0.0f},
+        {0.0f, axis_length, 0.0f},
+        {0.0f, 0.0f, axis_length}
+    };
+
+    std::vector<cv::Point2f> projected;
+    cv::projectPoints(axis_points, rvec, tvec, camera_matrix_, dist_coeffs_, projected);
+    if (projected.size() != 4) {
+        return;
+    }
+
+    const cv::Point2f& origin = projected[0];
+    cv::line(vis, origin, projected[1], cv::Scalar(0, 0, 255), 2);  // X - Red
+    cv::line(vis, origin, projected[2], cv::Scalar(0, 255, 0), 2);  // Y - Green
+    cv::line(vis, origin, projected[3], cv::Scalar(255, 0, 0), 2);  // Z - Blue
 }
 
 cv::Rect ArmorDetectionPipeline::clampRect(const cv::Rect& rect, const cv::Size& size) const {

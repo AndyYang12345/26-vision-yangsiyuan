@@ -20,17 +20,17 @@ std::vector<cv::Point3f> PnPSolver::get3DPoints(ArmorSize size) const {
     const float half_w = w * 0.5f;
     const float half_h = h * 0.5f;
     return {
-        {-half_w, -half_h, 0.0f},
-        { half_w, -half_h, 0.0f},
-        { half_w,  half_h, 0.0f},
-        {-half_w,  half_h, 0.0f}
+        {-half_w,  half_h, 0.0f},  // 左上
+        { half_w,  half_h, 0.0f},  // 右上
+        { half_w, -half_h, 0.0f},  // 右下
+        {-half_w, -half_h, 0.0f}   // 左下
     };
 }
 
 bool PnPSolver::solve(const Armor& armor,
                       cv::Mat& rvec,
                       cv::Mat& tvec,
-                      bool use_extrinsic_guess) {
+                      bool use_extrinsic_guess) const {
     if (armor.corners.size() != 4 || camera_matrix_.empty()) {
         return false;
     }
@@ -54,7 +54,7 @@ bool PnPSolver::solve(const Armor& armor,
 
 double PnPSolver::evaluateReprojectionError(const Armor& armor,
                                             const cv::Mat& rvec,
-                                            const cv::Mat& tvec) {
+                                            const cv::Mat& tvec) const {
     if (armor.corners.size() != 4 || camera_matrix_.empty()) {
         return -1.0;
     }

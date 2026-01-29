@@ -15,19 +15,19 @@ bool hasValidParams(const ArmorParams& params) {
 }
 
 std::vector<cv::Point3f> buildModelPoints(ArmorSize size) {
-    const float small_w = 135.0f;
-    const float small_h = 55.0f;
+    const float small_w = 130.0f;
+    const float small_h = 54.0f;
     const float large_w = 230.0f;
-    const float large_h = 55.0f;
+    const float large_h = 54.0f;
     const float w = (size == LARGE_ARMOR) ? large_w : small_w;
     const float h = (size == LARGE_ARMOR) ? large_h : small_h;
     const float half_w = w * 0.5f;
     const float half_h = h * 0.5f;
     return {
-        {-half_w, -half_h, 0.0f},
-        { half_w, -half_h, 0.0f},
-        { half_w,  half_h, 0.0f},
-        {-half_w,  half_h, 0.0f}
+        {-half_w,  half_h, 0.0f},  // 左上
+        { half_w,  half_h, 0.0f},  // 右上
+        { half_w, -half_h, 0.0f},  // 右下
+        {-half_w, -half_h, 0.0f}   // 左下
     };
 }
 }  // namespace
