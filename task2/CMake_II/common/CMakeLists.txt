@@ -6,12 +6,13 @@ foreach(child ${COMMON_CHILDREN})
     endif()
 endforeach()
 
+add_library(singleton INTERFACE)
+target_include_directories(singleton INTERFACE "${CMAKE_CURRENT_LIST_DIR}/singleton/include")
+
 if(TARGET rmath)
     target_link_libraries(common INTERFACE rmath)
 endif()
-if(TARGET singleton)
-    target_link_libraries(common INTERFACE singleton)
-endif()
+target_link_libraries(common INTERFACE singleton)
 
 set(Common_INCLUDE_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/rmath/include;${CMAKE_CURRENT_LIST_DIR}/singleton/include"

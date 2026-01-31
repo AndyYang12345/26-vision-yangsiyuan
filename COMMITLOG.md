@@ -1,8 +1,8 @@
-## [0.2.0] - 2026-01-30
+## [0.2.1] - 2026-01-31
 
 ### Feature 新增
 
-+ Task2中CMakeII部分的依赖分析，初步实现了需要的CMakeLists文件。
++ 
 
 ### Changed 变更
 
@@ -10,7 +10,7 @@
 
 ### Fixed 修复
 
-* 
+* 部分CMakeLists文件的语法错误和连接错误
 
 ### Optimization 优化
 
@@ -18,7 +18,7 @@
 
 ### Documentation 文档
 
-* 
+* 更新README文档，完成CMakeII的构建
 
 ### Other 其他
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(3.10)
+cmake_minimum_required(VERSION 3.10)
 project(Test)
 
 
@@ -17,8 +17,8 @@ add_subdirectory(common)
 # # # # 以上内容禁止修改 # # # #
 
 
-add_executable(server, server.cpp)
-target_link_libraries(server PRIVATE common module2 pthread)
+add_executable(server server.cpp)
+target_link_libraries(server PRIVATE common module1 module2)
 
-add_executable(client, client.cpp)
-target_link_libraries(client PRIVATE common module2)
+add_executable(client client.cpp)
+target_link_libraries(client PRIVATE module2)
