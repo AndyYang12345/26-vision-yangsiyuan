@@ -10,7 +10,7 @@
 
 ### Fixed 修复
 
-* 部分CMakeLists文件的语法错误和连接错误
+* 
 
 ### Optimization 优化
 
@@ -18,7 +18,7 @@
 
 ### Documentation 文档
 
-* 更新README文档，完成CMakeII的构建
+* 
 
 ### Other 其他
 
