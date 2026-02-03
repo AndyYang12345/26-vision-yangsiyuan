@@ -23,7 +23,6 @@ add_library(task1_core
   src/preprocessor/ImagePreprocessor.cpp
   src/types/Armor.cpp
   src/types/LightBar.cpp
-  src/types/Params.cpp
 )
 
 target_include_directories(task1_core

@@ -54,6 +54,4 @@ struct Params {
     int morph_kernel = 0;
     std::string classifier_model_path = "";
     
-    // 从YAML文件加载参数
-    static Params loadFromYAML(const std::string& filename);
 };
