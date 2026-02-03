@@ -1,6 +1,9 @@
 # Build directories
 build/
 cmake-build-*/
+task2/CMake_I/build/
+task2/CMake_II/build/
+
 
 # CMake generated files
 CMakeFiles/
